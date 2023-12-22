@@ -1,7 +1,6 @@
 import pgeocode
 import brazilcep
-import geopy
-
+from geopy.geocoders import Nominatim
 
 class address:
     """
@@ -54,13 +53,13 @@ class address:
         """
         if self.zip_code:    
             if self.country == "br":
-                location = brazilcep.get_address_from_cep('06325-130')
+                location = brazilcep.get_address_from_cep(self.zip_code)
                 street = location["street"]
                 district = location["district"]
                 uf = location["uf"]
                 address_string = "{}, {}, {}".format(street,district,uf)
-                geolocator = Nominatim(user_agent="tests")
-                result = geolocator.geocode("Avenida Perimetral Sudoeste, COHAB, São Paulo")
+                geolocator = Nominatim(user_agent="uber_project")
+                result = geolocator.geocode(address_string)
                 longitude = result.longitude
                 latitude = result.latitude
                 
@@ -79,7 +78,7 @@ class address:
                 
                 self.state = state
                 
-                geolocator = Nominatim(user_agent="tests")
+                geolocator = Nominatim(user_agent="uber_project")
                 location = geolocator.geocode("{} {}".format(self.street, self.state))
                 
                 longitude = location.longitude 
@@ -91,3 +90,21 @@ class address:
             raise ValueError("zip_code value was not provided")
         
         return position_dict
+    
+    
+    
+    def get_info_by_address(self):
+        """
+        Get info for a provided address (street, district, state), if the country is Brazil (br) it will get     / 
+        address data with brazilcep, if it is USA (us) it will get address data with    /
+        pgeocode (in this case street must be provided)
+        
+        
+        raises:
+            ValueError: If zip_code is not provided
+        
+        returns:
+            Dict[Latitude:String,Longitude:String] : latitude and longitude values
+            (when looking for Brazilean zip codes, sometimes it will return None, in    /
+            this case you shoul try other method)
+        """
